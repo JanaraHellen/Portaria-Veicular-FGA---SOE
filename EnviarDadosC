@@ -1,0 +1,43 @@
+%Código em C para enviar dados
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <curl/curl.h>
+
+void sendTelegramMessage(const char *token, const char *chat_id, const char *message) {
+    CURL *curl;
+    CURLcode res;
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+
+    if (curl) {
+        char url[200];
+        snprintf(url, sizeof(url), "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s", token, chat_id, message);
+
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK) {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        }
+
+        curl_easy_cleanup(curl);
+    }
+
+    curl_global_cleanup();
+}
+
+int main() {
+    // Substitua 'YOUR_BOT_TOKEN' e 'YOUR_CHAT_ID' pelos valores reais
+    const char *token = "YOUR_BOT_TOKEN";
+    const char *chat_id = "YOUR_CHAT_ID";
+
+    // Substitua 'Seus dados aqui...' pelos dados que você deseja enviar
+    const char *data_to_send = "Seus dados aqui...";
+
+    sendTelegramMessage(token, chat_id, data_to_send);
+
+    return 0;
+}
