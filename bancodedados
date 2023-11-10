@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <sqlite3.h>
+
+int main() {
+    sqlite3 *db;
+    char *errMsg = 0;
+
+    // Abra o banco de dados (ou crie um novo se não existir)
+    int rc = sqlite3_open("veiculos.db", &db);
+
+    if (rc) {
+        fprintf(stderr, "Não foi possível abrir o banco de dados: %s\n", sqlite3_errmsg(db));
+        return(0);
+    } else {
+        fprintf(stderr, "Banco de dados aberto com sucesso\n");
+    }
+
+    // Crie uma tabela para armazenar as informações
+    const char *create_table_sql = 
+        "CREATE TABLE placas ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "numero_placa TEXT NOT NULL,"
+        "nome_dono TEXT NOT NULL);";
+
+    rc = sqlite3_exec(db, create_table_sql, 0, 0, &errMsg);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Erro ao criar a tabela: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    } else {
+        fprintf(stderr, "Tabela criada com sucesso\n");
+    }
+
+    // Insira dados no banco de dados
+    const char *insert_data_sql = "INSERT INTO placas (numero_placa, nome_dono) VALUES ('ABC123', 'João da Silva');";
+    rc = sqlite3_exec(db, insert_data_sql, 0, 0, &errMsg);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Erro ao inserir dados: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    } else {
+        fprintf(stderr, "Dados inseridos com sucesso\n");
+    }
+
+    // Feche o banco de dados
+    sqlite3_close(db);
+
+    return 0;
+}
