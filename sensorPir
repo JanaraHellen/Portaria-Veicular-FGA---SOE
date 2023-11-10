@@ -1,0 +1,27 @@
+#include <wiringPi.h>
+#include <stdio.h>
+
+#define PIR_PIN 17 // Use o pino GPIO que você escolheu
+
+int main(void) {
+    if (wiringPiSetupGpio() == -1) {
+        printf("Erro na inicialização do wiringPi.\n");
+        return 1;
+    }
+
+    pinMode(PIR_PIN, INPUT);
+
+    printf("Aguardando detecção de movimento...\n");
+
+    while (1) {
+        if (digitalRead(PIR_PIN) == HIGH) {
+            printf("Movimento detectado!\n");
+            // Faça o que você deseja quando o movimento for detectado
+            // Por exemplo, acione um alarme, tire uma foto, etc.
+            delay(1000); // Evite múltiplas detecções em rápida sucessão
+        }
+        delay(100);
+    }
+
+    return 0;
+}
