@@ -1,49 +1,135 @@
-#include <stdio.h>
-#include <sqlite3.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+// Definindo a estrutura dos dados
+struct RegistroVeiculo {
+    std::string nome;
+    std::string placa;
+};
+
+// Função para criar o arquivo CSV com o cabeçalho inicial, se necessário
+void criarArquivoSeNecessario();
+
+// Função para adicionar um novo registro ao banco de dados
+void adicionarRegistro(const RegistroVeiculo& registro);
+
+// Função para obter informações de um novo veículo do usuário
+RegistroVeiculo obterNovoVeiculo();
+
+// Função para processar os comandos
+void processarComando(const std::string& comando);
+
+// Função para exibir ajuda
+void exibirAjuda();
+
+// Função para exibir todos os registros na base de dados
+void exibirRegistros();
 
 int main() {
-    sqlite3 *db;
-    char *errMsg = 0;
+    criarArquivoSeNecessario();
 
-    // Abra o banco de dados (ou crie um novo se não existir)
-    int rc = sqlite3_open("veiculos.db", &db);
+    std::string comando;
 
-    if (rc) {
-        fprintf(stderr, "Não foi possível abrir o banco de dados: %s\n", sqlite3_errmsg(db));
-        return(0);
-    } else {
-        fprintf(stderr, "Banco de dados aberto com sucesso\n");
+    while (true) {
+        std::cout << "\nDigite um comando ('ajuda' para ver os comandos): ";
+        std::getline(std::cin, comando);
+
+        if (comando == "sair") {
+            break;
+        }
+
+        processarComando(comando);
     }
-
-    // Crie uma tabela para armazenar as informações
-    const char *create_table_sql = 
-        "CREATE TABLE placas ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "numero_placa TEXT NOT NULL,"
-        "nome_dono TEXT NOT NULL);";
-
-    rc = sqlite3_exec(db, create_table_sql, 0, 0, &errMsg);
-
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Erro ao criar a tabela: %s\n", errMsg);
-        sqlite3_free(errMsg);
-    } else {
-        fprintf(stderr, "Tabela criada com sucesso\n");
-    }
-
-    // Insira dados no banco de dados
-    const char *insert_data_sql = "INSERT INTO placas (numero_placa, nome_dono) VALUES ('ABC123', 'João da Silva');";
-    rc = sqlite3_exec(db, insert_data_sql, 0, 0, &errMsg);
-
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Erro ao inserir dados: %s\n", errMsg);
-        sqlite3_free(errMsg);
-    } else {
-        fprintf(stderr, "Dados inseridos com sucesso\n");
-    }
-
-    // Feche o banco de dados
-    sqlite3_close(db);
 
     return 0;
+}
+
+// Implementação das funções
+
+void criarArquivoSeNecessario() {
+    std::ifstream arquivo("base_de_dados_veiculos.csv");
+
+    if (!arquivo.is_open()) {
+        std::ofstream novoArquivo("base_de_dados_veiculos.csv");
+
+        if (novoArquivo.is_open()) {
+            novoArquivo << "Nome,Placa\n";
+            std::cout << "Arquivo da base de dados criado com cabeçalho.\n";
+            novoArquivo.close();
+        } else {
+            std::cerr << "Erro ao criar o arquivo da base de dados.\n";
+        }
+    }
+}
+
+void adicionarRegistro(const RegistroVeiculo& registro) {
+    std::ofstream arquivo("base_de_dados_veiculos.csv", std::ios::app);
+
+    if (arquivo.is_open()) {
+        arquivo << registro.nome << ',' << registro.placa << '\n';
+        arquivo.close();
+        std::cout << "Registro adicionado com sucesso.\n";
+    } else {
+        std::cerr << "Erro ao abrir o arquivo da base de dados.\n";
+    }
+}
+
+RegistroVeiculo obterNovoVeiculo() {
+    RegistroVeiculo novoRegistro;
+
+    std::cout << "Informe o nome do veículo: ";
+    std::getline(std::cin, novoRegistro.nome);
+
+    std::cout << "Informe a placa do veículo: ";
+    std::getline(std::cin, novoRegistro.placa);
+
+    return novoRegistro;
+}
+
+void processarComando(const std::string& comando) {
+    if (comando == "adicionar") {
+        RegistroVeiculo novoRegistro = obterNovoVeiculo();
+        adicionarRegistro(novoRegistro);
+    } else if (comando == "listar") {
+        exibirRegistros();
+    } else if (comando == "ajuda") {
+        exibirAjuda();
+    } else {
+        std::cerr << "Comando desconhecido. Use 'ajuda' para ver os comandos disponíveis.\n";
+    }
+}
+
+void exibirAjuda() {
+    std::cout << "Comandos disponíveis:\n";
+    std::cout << "  adicionar - Adicionar um novo veículo\n";
+    std::cout << "  listar    - Listar todos os veículos\n";
+    std::cout << "  ajuda     - Exibir esta mensagem de ajuda\n";
+}
+
+void exibirRegistros() {
+    std::ifstream arquivo("base_de_dados_veiculos.csv");
+
+    if (arquivo.is_open()) {
+        std::cout << "Lista de Registros:\n";
+
+        // Ignora o cabeçalho
+        std::string cabecalho;
+        std::getline(arquivo, cabecalho);
+
+        while (!arquivo.eof()) {
+            RegistroVeiculo registro;
+            std::getline(arquivo, registro.nome, ',');
+            std::getline(arquivo, registro.placa, '\n');
+
+            if (!arquivo.fail()) {
+                std::cout << "Nome: " << registro.nome << ", Placa: " << registro.placa << '\n';
+            }
+        }
+
+        arquivo.close();
+    } else {
+        std::cerr << "Erro ao abrir o arquivo da base de dados.\n";
+    }
 }
