@@ -15,7 +15,7 @@ void processamento(){
     cv::Mat img_aumentada;
     cv::resize(imagem_placa, img_aumentada, cv::Size(), 4, 4, cv::INTER_CUBIC);
 
-    // O 50 e o 255 s„o colocados na placa, È a margem do quanto de branco e cinza ser„o adicionados na imagem para realÁar as letras 
+    // O 50 e o 255 s√£o colocados na placa, √© a margem do quanto de branco e cinza ser√£o adicionados na imagem para real√ßar as letras 
 
     cv::Mat img_cinza;
     cv::cvtColor(img_aumentada, img_cinza, cv::COLOR_BGR2GRAY);
