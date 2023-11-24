@@ -1,39 +1,27 @@
-#include <opencv2/opencv.hpp>
+#include <cstdlib>
+#include <iostream>
+#include <string> // Adicionado para incluir a biblioteca string
 
 int main() {
-    // Inicializar a webcam
-    cv::VideoCapture cap(0); // 0 representa a c‚mera padr„o, pode ser necess·rio ajustar dependendo do sistema
+    // Nome do arquivo de sa√≠da
+    const char* nomeArquivo = "foto.jpg";
 
-    // Verificar se a webcam foi aberta com sucesso
-    if (!cap.isOpened()) {
-        std::cerr << "Erro ao abrir a webcam." << std::endl;
-        return -1;
+    // Comando para capturar imagem usando fswebcam
+    const char* comando = "fswebcam --no-banner -r 640x480 --jpeg 85 -D 1 -S 2 ";
+
+    // Concatenando o nome do arquivo ao comando
+    std::string comandoCompleto = std::string(comando) + nomeArquivo;
+
+    // Executando o comando
+    int resultado = system(comandoCompleto.c_str());
+
+    // Verificando se a captura foi bem-sucedida
+    if (resultado == 0) {
+        std::cout << "Foto capturada com sucesso e salva como " << nomeArquivo << std::endl;
+    } else {
+        std::cerr << "Erro ao capturar a foto da webcam" << std::endl;
     }
-
-    // Definir a resoluÁ„o desejada
-    cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280);  // Largura desejada
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);  // Altura desejada
-
-    // Verificar se a configuraÁ„o da resoluÁ„o foi bem-sucedida
-    double width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
-    double height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
-    std::cout << "Resolucao: " << width << "x" << height << std::endl;
-
-    // Capturar uma imagem da webcam
-    cv::Mat frame;
-    cap >> frame;
-
-    // Verificar se a captura foi bem-sucedida
-    if (frame.empty()) {
-        std::cerr << "Erro ao capturar imagem da webcam." << std::endl;
-        return -1;
-    }
-
-    // Salvar a imagem capturada
-    cv::imwrite("captured_image.jpg", frame);
-
-    // Liberar recursos
-    cap.release();
 
     return 0;
 }
+
