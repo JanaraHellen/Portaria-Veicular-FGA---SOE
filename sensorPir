@@ -1,27 +1,53 @@
-#include <wiringPi.h>
-#include <stdio.h>
+ Import required Python libraries
+import RPi.GPIO as GPIO
+import time
 
-#define PIR_PIN 17 // Use o pino GPIO que você escolheu
+# Use BCM GPIO references
+# instead of physical pin numbers
+GPIO.setmode(GPIO.BCM)
 
-int main(void) {
-    if (wiringPiSetupGpio() == -1) {
-        printf("Erro na inicialização do wiringPi.\n");
-        return 1;
-    }
+# Define GPIO to use on Pi
+GPIO_PIR = 7
 
-    pinMode(PIR_PIN, INPUT);
+print ("PIR Module Test (CTRL-C to exit)")
 
-    printf("Aguardando detecção de movimento...\n");
+# Set pin as input
+GPIO.setup(GPIO_PIR,GPIO.IN)      # Echo
 
-    while (1) {
-        if (digitalRead(PIR_PIN) == HIGH) {
-            printf("Movimento detectado!\n");
-            // Faça o que você deseja quando o movimento for detectado
-            // Por exemplo, acione um alarme, tire uma foto, etc.
-            delay(1000); // Evite múltiplas detecções em rápida sucessão
-        }
-        delay(100);
-    }
+Current_State  = 0
+Previous_State = 0
 
-    return 0;
-}
+try:
+
+  print ("Waiting for PIR to settle ...")
+
+  # Loop until PIR output is 0
+  while GPIO.input(GPIO_PIR)==1:
+    Current_State  = 0    
+
+  print ("  Ready")     
+    
+  # Loop until users quits with CTRL-C
+  while True :
+   
+    # Read PIR state
+    Current_State = GPIO.input(GPIO_PIR)
+   
+    if Current_State==1 and Previous_State==0:
+      # PIR is triggered
+      print ("  Motion detected!")
+      # Record previous state
+      Previous_State=1
+    elif Current_State==0 and Previous_State==1:
+      # PIR has returned to ready state
+      print ("  Ready")
+      Previous_State=0
+      
+    # Wait for 10 milliseconds
+    time.sleep(0.01)      
+      
+except KeyboardInterrupt:
+  print ("  Quit") 
+  # Reset GPIO settings
+  GPIO.cleanup()
+
